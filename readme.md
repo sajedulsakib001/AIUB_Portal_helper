@@ -55,16 +55,27 @@ To enable captcha solving, you need an API key for the Gemini service. Add your 
 
 CourseChromeextaintion/
 ├── app/
+
 │   ├── assets/
+
 │   │   ├── js/
+
 │   │   │   ├── main.js          # Main logic for the extension
+
 │   │   │   ├── autologin.js     # Auto-login functionality
+
 │   │   ├── json/                # JSON files for course and exam data
+
 │   │   ├── icons/               # Extension icons
+
 │   ├── pages/                   # HTML pages for the extension
+
 ├── background.js                # Background script for the extension
+
 ├── manifest.json                # Chrome extension manifest file
+
 └── readme.md                    # Project documentation
+
 
 ---
 
