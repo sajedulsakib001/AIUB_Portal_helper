@@ -1,8 +1,21 @@
+// Main JavaScript file for the extension
+// This file handles the navigation, data fetching, and display logic for the extension
+// Initialize the extension
+
+// ()=>{
 // Wait for DOM to load before initializing
 document.addEventListener("DOMContentLoaded", () => {
     loadHTML("show-page-content", "home");
     setupNavigation();
 });
+// Shows a popup for the GitHub link
+document.getElementById("showPopup").addEventListener("click", () => {
+    document.getElementById('popupBox').classList.add('show');
+});
+document.getElementById("closePopup").addEventListener("click", () => {
+    document.getElementById('popupBox').classList.remove('show');
+});
+// }
 
 // ----------- Navigation Logic -----------
 
@@ -68,7 +81,7 @@ function setupNavigation() {
  */
 function setUpHome() {
     setGreeting();
-    setCurrentDate();
+
 
     const reloadBtn = document.getElementById("reloadRoutine");
     const downloadBtn = document.getElementById("downloadPdf");
@@ -77,12 +90,6 @@ function setUpHome() {
         reloadBtn.addEventListener("click", () => reloadHomePage(true));
     }
 
-    if (downloadBtn) {
-        downloadBtn.addEventListener("click", () => {
-            alert("Downloading PDF...");
-            // TODO: Add PDF export logic here
-        });
-    }
 
     reloadHomePage();
 }
@@ -105,22 +112,80 @@ function setGreeting() {
 }
 
 /**
- * Sets the current date in the #currentDate element.
+ * Determines whether tomorrow's routine should be displayed based on the current time
+ * and user-defined settings stored in localStorage.
+ *
+ * @param {number} hour - The current hour in 24-hour format (0-23).
+ * @param {number} minute - The current minute (0-59).
+ * @returns {boolean} - Returns `true` if tomorrow's routine should be shown, otherwise `false`.
+ *
+ * The function checks the following conditions:
+ * - If no specific time is set in the settings and the current hour is 16 or later, it returns `true`.
+ * - If a specific time is set in the settings, it compares the current time with the configured time
+ *   (considering AM/PM) to determine whether tomorrow's routine should be displayed.
  */
-async function setCurrentDate() {
-    const dateEl = document.getElementById('currentDate');
-    if (!dateEl) {
-        console.error("Element with id 'currentDate' not found.");
-        return;
+function shouldShowTomorrowRoutine(hour, minute) {
+    const time = JSON.parse(localStorage.getItem("settings")).showTomorrowsRoutineAt;
+
+    if (time === null && hour >= 16) {
+        return true;
+    } else if (time === null) {
+        return false;
+    } else {
+        let h = parseInt(time.hour);
+        if (time.ampm === "PM" && h !== 12) {
+            h += 12;
+        }
+        if (h === hour && parseInt(time.minute) <= minute) {
+
+            return true;
+        } else if (h < hour) {
+            return true;
+        }
+        return false;
     }
-    dateEl.textContent = getDateTime();
+}
+
+
+/**
+ * Sets the current dates in the #currentDate element.
+ */
+/**
+ * Updates the current dates and displays it on the webpage, along with any relevant holiday information.
+ * 
+ * This function fetches the current date and determines whether to show today's or tomorrow's routine.
+ * It also fetches holiday data from a JSON file and displays any holidays that match the current or next day.
+ * 
+ * @async
+ * @function setCurrentDates
+ * @returns {Promise<void>} Resolves when the date and holiday information is updated on the webpage.
+ * 
+ * @description
+ * - Updates the "Today" and "Tomorrow" date elements on the page.
+ * - Fetches holiday data from `app/assets/json/holidays.json`.
+ * - Checks if the current or next day matches any holiday and displays the holiday name.
+ * - Highlights holidays in red with bold text.
+ * 
+ * @throws {Error} If there is an issue fetching or parsing the holiday data.
+ */
+async function setCurrentDates() {
+    const dateEl = document.getElementById('currentDate');
+    const dateELNext = document.getElementById('currentDate-next');
+    const dates = getDateTime();
+    const showTomorrowRoutine = shouldShowTomorrowRoutine(dates.hours, dates.minutes);
+    if (showTomorrowRoutine) {
+        dateELNext.style.display = "block";
+        dateELNext.textContent = "Tomorrow : " + dates.nextDay;
+    }
+
+    dateEl.textContent = "Today : " + dates.today;
+    document.getElementById("currentDate").style.display = "block";
     const fetchedHolidays = await fetch("app/assets/json/holidays.json");
     const holidays = await fetchedHolidays.json();
+
     for (const holiday of holidays) {
-        const holidayDate = new Date(holiday["date"]);
-        // console.log(holidayDate);
-        const currentDate = new Date();
-        if (holidayDate.getDate() === currentDate.getDate() && holidayDate.getMonth() === currentDate.getMonth()) {
+        const holidayDate = new Date(holiday.date);
+        if (formatDate(holidayDate) === dates.today.split(",")[1]) {
             const holidayText = document.createElement("span");
             const br = document.createElement("br");
             dateEl.appendChild(br);
@@ -128,10 +193,16 @@ async function setCurrentDate() {
             holidayText.style = style;
             holidayText.textContent = `Possible Holiday - (${holiday.name})`;
             dateEl.appendChild(holidayText);
-            break;
+        } else if (showTomorrowRoutine && formatDate(holidayDate).split(",")[1] == dates.nextDay.split(",")[1]) {
+            const holidayText = document.createElement("span");
+            const br = document.createElement("br");
+            dateELNext.appendChild(br);
+            const style = "color: #ff0000; font-weight: bold; margin-left: 5px; font-size: 0.8em;";
+            holidayText.style = style;
+            holidayText.textContent = `Possible Holiday - (${holiday.name})`;
+            dateELNext.appendChild(holidayText);
         }
     }
-    // const holidayEl = document.createElement("span");
 
 }
 
@@ -140,10 +211,10 @@ async function setCurrentDate() {
  * @param {boolean} reload - If true, clears local storage.
  */
 async function reloadHomePage(reload = false) {
+
     const show = async (data) => {
-        const day = getDateTime().substring(0, 3);
         await delay(500);
-        showRoutine(data, day);
+        showRoutine(data);
     }
     if (!reload) {
         let data = JSON.parse(localStorage.getItem("routine"));
@@ -151,21 +222,22 @@ async function reloadHomePage(reload = false) {
             await delay(500);
             showNoRoutineMessage();
         } else {
+            setCurrentDates();
             show(data);
         }
         return;
     }
     localStorage.removeItem("routine");
     localStorage.removeItem("currentCourses");
-    console.log("Routine removed from storage.");
+
 
     data = await getRoutine();
     if (data !== null) {
         show(data[0]);
+        setCurrentDates();
         localStorage.setItem("routine", JSON.stringify(data[0]));
-        console.log("Routine saved to storage.", data[0]);
         localStorage.setItem("currentCourses", JSON.stringify(data[1]));
-        console.log("Current Courses saved to storage.", data[1]);
+
     } else {
         showNoRoutineMessage();
         return;
@@ -179,6 +251,8 @@ function showNoRoutineMessage() {
     const list = document.getElementById("routineList");
     if (list) {
         list.innerHTML = "<center><strong>No Routine was found.</strong><br><p>Please, Click on Reload</p></center>";
+        document.getElementById("currentDate-next").style.display = "none";
+        document.getElementById("currentDate").style.display = "none";
     }
 }
 
@@ -196,19 +270,29 @@ function delay(ms) {
  * @param {Array} routine - The routine array.
  * @param {string} today - The current day (e.g., "Mon").
  */
-function showRoutine(routine, today) {
+function showRoutine(routine) {
     const list = document.getElementById("routineList");
     if (!list) return;
-
     list.innerHTML = "";
     if (!routine) {
         list.innerHTML = "<li>No Routine was found.</li>";
         return;
     }
+    const dates = getDateTime();
+    if (shouldShowTomorrowRoutine(dates.hours, dates.minutes)) {
+        displayRoutine(routine, dates.nextDay, true);
+        document.getElementById("routineList-next").style.display = "block";
+    }
+    displayRoutine(routine, dates.today);
 
+}
+
+function displayRoutine(routine, date, next = false) {
+    const list = next ? document.getElementById("routineList-next") : document.getElementById("routineList");
+    list.innerHTML = "";
     let found = false;
     for (const day of routine) {
-        if (day["day"] !== today) continue;
+        if (day["day"] !== date.substring(0, 3)) continue;
         for (const todaysClass of day["classes"]) {
             const item = document.createElement("div");
             item.className = "routine-item";
@@ -229,7 +313,8 @@ function showRoutine(routine, today) {
         break;
     }
     if (!found) {
-        list.innerHTML = "<center><h5>No Class for Today.</h5></center>";
+        // const dayName = ;
+        list.innerHTML = "<center><h5>No Class for " + (next ? "Tomorrow" : "Today") + ".</h5></center>";
     }
 }
 
@@ -239,8 +324,25 @@ function showRoutine(routine, today) {
  */
 function getDateTime() {
     const T = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return T.toLocaleDateString(undefined, options);
+    const date = T.getDate();
+    const hours = T.getHours();
+    const minutes = T.getMinutes();
+    const today = formatDate(T);
+    const nextDay = new Date(T);
+    nextDay.setDate(T.getDate() + 1);
+    const formatedNextDay = formatDate(nextDay);
+    const month = T.getMonth();
+    return { date, hours, minutes, today, nextDay: formatedNextDay, month };
+}
+
+function formatDate(date) {
+    const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long", // You had "log" but it should be "long"
+        day: "numeric"
+    };
+    return new Intl.DateTimeFormat("en-US", options).format(date);
 }
 
 // ----------- Other Page Logic -----------
@@ -273,7 +375,7 @@ function setupOtherMenu() {
                 if (topic === "unlockedCourse") {
                     setupUnlockedCoursePage();
                     setTimeout(loadUnlockedCourses, 1000);
-                } 
+                }
                 // else if (topic === "examSchedule") {
                 //     setupExamSchedulePage();
                 //     setTimeout(displayExamSchedule, 1000);
@@ -305,7 +407,7 @@ async function loadOtherContent(file) {
     try {
         const response = await fetch(chrome.runtime.getURL(path));
         return await response.text();
-    }catch (err) {
+    } catch (err) {
         console.error(`Error loading ${file}:`, err);
         return "";
     }
@@ -510,9 +612,6 @@ function getRoutine() {
                             result: resultText
                         });
                     });
-
-
-
                     return [orderedPlan, currentCourses];
                 }
             }, (results) => {
@@ -667,7 +766,7 @@ async function getExamSchedule(reload) {
     try {
         var schedule = [];
         const courseList = JSON.parse(localStorage.getItem("currentCourses"));
-        // console.log(courseList, "Course List");
+
         if (courseList === null) {
             return null;
         }
@@ -685,7 +784,7 @@ async function getExamSchedule(reload) {
                     const courseName = course["course_title"];
                     const sections = course["sections"];
                     for (const coursefromList of courseList) {
-                        // console.log(coursefromList["name"].toLowerCase(),courseName.toLowerCase(),"\n\n");
+
                         if (coursefromList["name"].toLowerCase() === courseName.toLowerCase()) {
                             for (const section of sections) {
                                 if (section === coursefromList["section"]) {
@@ -719,7 +818,7 @@ async function displayExamSchedule(reload = false) {
 
     const tbody = document.getElementById("exam-items");
     const show = (newSchedule) => {
-        // console.log(newSchedule,"\n\nShow the Data!\n\n");
+
         const term = document.getElementById("term");
         term.innerText = newSchedule["term"];
         for (const exam of newSchedule["schedule"]) {
@@ -752,7 +851,7 @@ async function displayExamSchedule(reload = false) {
     }
     localStorage.removeItem("examSchedule");
     var newSchedule = await getExamSchedule(reload);
-    // console.log(newSchedule, "New Schedule");
+
     if (newSchedule !== null) {
         show(newSchedule);
         localStorage.setItem("examSchedule", JSON.stringify(newSchedule));
@@ -767,26 +866,12 @@ async function displayExamSchedule(reload = false) {
     }
 }
 
-// ----------- Popup Logic -----------
-
-/**
- * Show and hide popup box.
- */
-document.getElementById("showPopup").addEventListener("click", () => {
-    document.getElementById('popupBox').classList.add('show');
-});
-document.getElementById("closePopup").addEventListener("click", () => {
-    document.getElementById('popupBox').classList.remove('show');
-});
-
-
 // ----------- Setup Settings -----------
 /**
  * Sets up the settings page.
  */
 
 async function setupSettingsPage() {
-    console.log("Settings Page Loaded");
     const toggle = document.getElementById("autoLogin");
     const settingsFields = document.getElementById("settingsFields");
     const alertBox = document.getElementById('alertContainer');
@@ -800,16 +885,18 @@ async function setupSettingsPage() {
         }
     });
     const btn = document.getElementById("save-settings");
-    btn.addEventListener("click",()=>{
-        saveSettingsInStorage();
-        alertBox.style.display = 'block';
-        setTimeout(() => {
-            alertBox.style.display = 'none';
-        },1000);
+    btn.addEventListener("click", () => {
+        const res = saveSettingsInStorage();
+        if (res) {
+            alertBox.style.display = 'block';
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 1000);
+        }
     });
 
     closeBtn.addEventListener('click', () => {
-      alertBox.style.display = 'none';
+        alertBox.style.display = 'none';
     });
     showSavedSettings();
 }
@@ -823,18 +910,26 @@ async function setupSettingsPage() {
 function saveSettingsInStorage() {
     const autoLogin = document.getElementById("autoLogin").checked;
     const apiKey = document.getElementById("apiKey").value;
+
+
     if (autoLogin && apiKey === "") {
         document.getElementById("wrongApi").style = "display:block;";
-        return;
+        return false;
     }
     document.getElementById("wrongApi").style = "display:none;";
+    const showTomorrowsRoutineAt = getSelectedTimeforT();
+    if (showTomorrowsRoutineAt === "error") return false;
     const data = {
         autoLogin,
         apiKey,
+        showTomorrowsRoutineAt
     };
-    chrome.storage.local.set({ settings: data }, () => {
-        console.log("Settings saved to chrome.storage.local.");
+
+    localStorage.setItem("settings", JSON.stringify(data));
+    chrome.storage.local.set({ settings: { autoLogin, apiKey } }, () => {
+
     });
+    return true;
 }
 
 
@@ -850,14 +945,48 @@ function saveSettingsInStorage() {
  * @returns {void}
  */
 function showSavedSettings() {
-    chrome.storage.local.get(["settings"], (result) => {
-        const settings = result.settings || {};
-        if (settings) {
-            document.getElementById("autoLogin").checked = settings.autoLogin;
-            document.getElementById("apiKey").value = settings.apiKey;
-            if (settings.autoLogin) {
-                document.getElementById("settingsFields").classList.add("show");
-            }
+    const settings = JSON.parse(localStorage.getItem("settings"));
+    if (settings !== null) {
+        document.getElementById("autoLogin").checked = settings.autoLogin;
+        document.getElementById("apiKey").value = settings.apiKey;
+        showSelectedTimeforT(settings.showTomorrowsRoutineAt);
+        if (settings.autoLogin) {
+            document.getElementById("settingsFields").classList.add("show");
         }
-    });
+
+    }
+}
+
+/**
+ * gets the time to show tomorrow's routine.
+ * @returns {Object} An object containing hour, minute, and ampm.
+ */
+
+function getSelectedTimeforT() {
+    const hour = document.getElementById("hour").value;
+    const minute = document.getElementById("minute").value;
+    const ampm = document.getElementById("ampm").value;
+    let res = null;
+    if ((hour === "Hour" || minute === "Min" || ampm === "AM/PM") &&
+        !(hour === "Hour" && minute === "Min" && ampm === "AM/PM")) {
+        document.getElementById("wrongtime").style = "display:block;";
+        return "error";
+    } else {
+        document.getElementById("wrongtime").style = "display:none;";
+        res = { hour, minute, ampm };
+    }
+    return res;
+}
+
+/**
+ * show the time to show tomorrow's routine.
+ * @returns {Object} An object containing hour, minute, and ampm.
+ */
+
+function showSelectedTimeforT(time) {
+    if (time === null || time === undefined) return;
+    document.getElementById("hour").value = time.hour;
+    document.getElementById("minute").value = time.minute;
+    document.getElementById("ampm").value = time.ampm;
+
 }

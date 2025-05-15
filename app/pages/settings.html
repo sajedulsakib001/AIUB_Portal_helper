@@ -3,100 +3,6 @@
     <div class="header">
         <h2 class="mb-4">Extension Settings</h2>
     </div>
-    <style>
-        /* Bootstrap collapse behavior simulation */
-        .collapse {
-            display: none;
-        }
-
-        .collapse.show {
-            display: block;
-        }
-
-        #wrongApi {
-            color: red;
-            font-size: 10px;
-            margin-left: 10px;
-            margin-top: 8px
-        }
-
-        .info-icon {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-        .info-icon .tooltip-text {
-            visibility: hidden;
-            width: 200px;
-            background-color: #333;
-            color: #fff;
-            text-align: left;
-            border-radius: 6px;
-            padding: 8px;
-            position: absolute;
-            z-index: 10;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.2s ease-in-out;
-            font-size: 0.85rem;
-        }
-
-        .info-icon:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .info-icon .tooltip-text::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 5px;
-            border-style: solid;
-            border-color: #333 transparent transparent transparent;
-        }
-
-        .custom-alert {
-            position: fixed;
-            font-size: 12px;
-            top: 70px;
-            right: 22px;
-            height: 45px;
-            width: 140px;
-            z-index: 9999;
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .alert-icon {
-            font-size: 1.2rem;
-            margin-right: 8px;
-        }
-
-        #btnclose {
-            background: none;
-            border: none;
-            padding: 0.5rem;
-            font-size: 16px;
-            margin-right: -10px;
-        }
-    </style>
     <div class="card shadow-lg rounded-4 mx-auto" style="max-width: 600px;">
         <div class="card-body p-4">
 
@@ -132,10 +38,81 @@
 
                     </label>
                     <input type="text" class="form-control" id="apiKey" placeholder="Enter your Gemini API key" />
-                    <p role="alert" id="wrongApi" style="display: none;">
+                    <p role="alert" class="wrongData" id="wrongApi" style="display: none;">
                         You must provide a valid Api-Key.
                     </p>
                 </div>
+            </div>
+
+            <!-- Show Tomorrow's Routine At -->
+
+            <div class="mb-3">
+                <label for="apiKey" class="form-label">
+                    Select time to show tomorrow's routine<span class="text-danger">* </span>
+                    <span class="info-icon text-info">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"
+                            fill="#0d6efd">
+                            <path transform="scale(0.03125)"
+                                d="M356.004,61.156c-81.37-81.47-213.377-81.551-294.848-0.182c-81.47,81.371-81.552,213.379-0.181,294.85 
+    c81.369,81.47,213.378,81.551,294.849,0.181C437.293,274.636,437.375,142.626,356.004,61.156z M237.6,340.786 
+    c0,3.217-2.607,5.822-5.822,5.822h-46.576c-3.215,0-5.822-2.605-5.822-5.822V167.885c0-3.217,2.607-5.822,5.822-5.822h46.576 
+    c3.215,0,5.822,2.604,5.822,5.822V340.786z M208.49,137.901c-18.618,0-33.766-15.146-33.766-33.765 
+    c0-18.617,15.147-33.766,33.766-33.766c18.619,0,33.766,15.148,33.766,33.766C242.256,122.755,227.107,137.901,208.49,137.901z" />
+                        </svg>
+                        <span class="tooltip-text">
+                            By default, the extension shows tomorrow's routine at 4:00 PM. You can change it here.
+                        </span>
+                    </span>
+
+                </label>
+                <div class="row g-2">
+                    <div class="col-4">
+                        <select class="form-select" id="hour">
+                            <option disabled selected>Hour</option>
+                            <!-- 12-hour format -->
+                            <option>01</option>
+                            <option>02</option>
+                            <option>03</option>
+                            <option>04</option>
+                            <option>05</option>
+                            <option>06</option>
+                            <option>07</option>
+                            <option>08</option>
+                            <option>09</option>
+                            <option>10</option>
+                            <option>11</option>
+                            <option>12</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" id="minute">
+                            <option disabled selected>Min</option>
+                            <!-- Minutes -->
+                            <option>00</option>
+                            <option>05</option>
+                            <option>10</option>
+                            <option>15</option>
+                            <option>20</option>
+                            <option>25</option>
+                            <option>30</option>
+                            <option>35</option>
+                            <option>40</option>
+                            <option>45</option>
+                            <option>50</option>
+                            <option>55</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <select class="form-select" id="ampm">
+                            <option disabled selected>AM/PM</option>
+                            <option>AM</option>
+                            <option>PM</option>
+                        </select>
+                    </div>
+                </div>
+                <p role="alert " class="wrongData" id="wrongtime" style="display: none;">
+                    You must select the hour, minute, and AM/PM.
+                </p>
             </div>
 
             <!-- Save Button -->
@@ -148,7 +125,7 @@
     </div>
 </div>
 <!-- Alert Box -->
-<div id="alertContainer"style="display: none;">
+<div id="alertContainer" style="display: none;">
 
     <div id="successAlert" class="alert alert-success d-flex align-items-center custom-alert" role="alert">
         <span class="alert-icon" style="margin-right: 5px; font-size: 12px;">✓</span>

@@ -403,6 +403,119 @@ body {
 
 
 /* Show the tooltip when hovering over the button */
-#reloadRoutine{
+#reloadRoutine {
     width: 30%;
+}
+
+/* Bootstrap collapse behavior simulation */
+.collapse {
+    display: none;
+}
+
+.collapse.show {
+    display: block;
+}
+
+.wrongData {
+    color: red;
+    font-size: 10px;
+    margin-left: 10px;
+    margin-top: 8px
+}
+
+.info-icon {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.info-icon .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    font-size: 0.85rem;
+}
+
+.info-icon:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.info-icon .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.custom-alert {
+    position: fixed;
+    font-size: 12px;
+    top: 70px;
+    right: 22px;
+    height: 45px;
+    width: 140px;
+    z-index: 9999;
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert-icon {
+    font-size: 1.2rem;
+    margin-right: 8px;
+}
+
+#btnclose {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    font-size: 16px;
+    margin-right: -10px;
+}
+
+.time-picker {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 25px;
+    border-radius: 15px;
+    background: #f8f9fa;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.time-picker select {
+    height: 45px;
+    font-size: 16px;
+}
+
+.time-label {
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 10px;
 }

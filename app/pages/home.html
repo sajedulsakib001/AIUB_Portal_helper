@@ -1,13 +1,17 @@
-
-            <div class="header">
-                <h2 id="greeting">👋 Good Morning!</h2>
-                <p class="text-muted">Here's your daily class routine</p>
-            </div>
-            <div class="date-display" id="currentDate"></div>
-            <div class="routine-box" id="routineList">
-                <!-- list of classes will be shown here -->
-            </div>
-            <div class="button-group w-50 px-5 mx-auto">
-                <button style="display: block" id="reloadRoutine">🔄 Reload</button>
-            </div>
-
+<div class="header">
+    <h2 id="greeting">👋 Good Morning!</h2>
+    <p class="text-muted">Here's your daily class routine</p>
+</div>
+<div style="overflow-y: auto;">
+    <div class="date-display" id="currentDate-next" style="display: none;"></div>
+    <div class="routine-box" id="routineList-next" style="display: none;">
+        <!-- list of classes will be shown here -->
+    </div>
+    <div class="date-display" id="currentDate" style="display: none;"></div>
+    <div class="routine-box" id="routineList">
+        <!-- list of classes will be shown here -->
+    </div>
+</div>
+<div class="button-group w-50 px-5 mx-auto">
+    <button style="display: block" id="reloadRoutine">🔄 Reload</button>
+</div>
