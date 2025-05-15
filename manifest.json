@@ -3,13 +3,14 @@
     "name": "Aiub Portal Helper",
     "version": "1.0",
     "description": "This is a simple Chrome extension for AIUB Students.",
+    "update_url": "https://raw.githubusercontent.com/sajedulsakib001/AIUB_Portal_helper/main/update/update.xml",
     "action": {
         "default_popup": "index.html",
         "default_icon": {
-            "16": "app/assets/icons/icon.png",
-            "32": "app/assets/icons/icon.png",
-            "48": "app/assets/icons/icon.png",
-            "128": "app/assets/icons/icon.png"
+            "16": "app/assets/icons/icon-16.png",
+            "32": "app/assets/icons/icon-32.png",
+            "48": "app/assets/icons/icon-48.png",
+            "128": "app/assets/icons/icon-128.png"
         },
         "default_title": "Aiub Unlocked Courses"
     },
