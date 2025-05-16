@@ -1,6 +1,13 @@
+/**
+ * Immediately Invoked Function Expression (IIFE) to encapsulate auto-login logic.
+ */
 (() => {
   let iscaptchaSolved = false;
 
+  /**
+   * Retrieves extension settings from chrome.storage.local asynchronously.
+   * @returns {Promise<Object>} - Resolves to the settings object.
+   */
   const getSettingsAsync = () => {
     return new Promise((resolve) => {
       chrome.storage.local.get(["settings"], (result) => {
@@ -9,9 +16,16 @@
     });
   };
 
+  /**
+   * Initializes the auto-login process.
+   * Checks if on the login page, loads settings, and starts captcha solving if enabled.
+   */
   const init = async () => {
+    if (!(document.querySelector('.login_header'))) {
+      console.log("Not on the login page.");
+      return;
+    }
     const settings = await getSettingsAsync();
-    console.log("Settings loaded in auto login:", settings);
 
     if (!settings.autoLogin) {
       console.log("Auto-login is disabled.");
@@ -27,6 +41,9 @@
     await solveCaptcha(settings.apiKey);
   };
 
+  /**
+   * Attaches input and click event listeners to login form fields to trigger auto-submit.
+   */
   const attachInputEvents = () => {
     const selectors = [
       "input[name='Username']",
@@ -43,6 +60,9 @@
     });
   };
 
+  /**
+   * Attempts to submit the login form if captcha is solved and credentials are filled.
+   */
   const attemptSubmit = () => {
     const user = document.querySelector("input[name='UserName']")?.value.trim();
     const pass = document.querySelector("input[name='Password']")?.value.trim();
@@ -54,6 +74,10 @@
     }
   };
 
+  /**
+   * Solves the captcha using the Gemini API and fills the result in the input field.
+   * @param {string} apiKey - The Gemini API key.
+   */
   const solveCaptcha = async (apiKey) => {
     const img = document.getElementById("CaptchaImage");
     const input = document.getElementById("CaptchaInputText");
@@ -79,6 +103,11 @@
     }
   };
 
+  /**
+   * Waits for the captcha image to finish loading before proceeding.
+   * @param {HTMLImageElement} img - The captcha image element.
+   * @returns {Promise<void>}
+   */
   const waitForImageLoad = (img) => {
     return new Promise((resolve) => {
       if (img.complete && img.naturalHeight > 0) return resolve();
@@ -86,6 +115,11 @@
     });
   };
 
+  /**
+   * Converts an image element to a base64-encoded PNG string.
+   * @param {HTMLImageElement} img - The image element.
+   * @returns {string} - The base64 string (without the data URL prefix).
+   */
   const convertToBase64 = (img) => {
     const canvas = document.createElement("canvas");
     canvas.width = img.naturalWidth;
@@ -94,6 +128,12 @@
     return canvas.toDataURL("image/png").split(",")[1];
   };
 
+  /**
+   * Sends the captcha image to the Gemini API for solving.
+   * @param {string} imageData - The base64-encoded image data.
+   * @param {string} apiKey - The Gemini API key.
+   * @returns {Promise<string>} - The solved captcha text.
+   */
   const queryGemini = async (imageData, apiKey) => {
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent?key=${apiKey}`,
@@ -122,12 +162,11 @@
     );
 
     const json = await response.json();
-    console.log("[Gemini] Response:", json);
 
     if (json.error) throw new Error(json.error.message);
     return json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   };
 
-  // Start
+  // Start the auto-login process
   init();
 })();
