@@ -2,14 +2,17 @@
  * Initializes the home page by setting the greeting, attaching event listeners,
  * and loading the routine data.
  */
-function setUpHome() {
+async function setUpHome() {
     setGreeting();
+    
     const reloadBtn = document.getElementById("reloadRoutine");
-    const showUpdatePopUp = document.getElementById("showUpdatePopUp");
+    
 
     if (reloadBtn) {
         reloadBtn.addEventListener("click", () => reloadHomePage(true));
     }
+    reloadHomePage();
+    const showUpdatePopUp = document.getElementById("showUpdatePopUp");
     showUpdatePopUp.addEventListener("click", () => {
         const popup = document.getElementById("updatePopUpBox");
         popup.classList.add("show");
@@ -21,7 +24,11 @@ function setUpHome() {
         document.getElementById('updatePopUpBox').classList.remove('show');
     });
 
-    reloadHomePage();
+    const _isUpdateAvailable = await isUpdateAvailable();
+    if(_isUpdateAvailable){
+        showUpdatePopUp.style.display = "block";
+    }
+    
 }
 
 /**
@@ -216,5 +223,18 @@ function displayRoutine(routine, date, next = false) {
     if (!found) {
 
         list.innerHTML = "<center><h5>No Class for " + (next ? "Tomorrow" : "Today") + ".</h5></center>";
+    }
+}
+
+async function isUpdateAvailable() {
+    try {
+        const current = chrome.runtime.getManifest().version;
+        const res = await fetch('https://raw.githubusercontent.com/sajedulsakib001/AIUB_Portal_helper/main/manifest.json');
+        const latest = (await res.json()).version;
+
+        return latest.split('.').some((n, i) => (parseInt(n) || 0) > ((current.split('.')[i]) || 0));
+    } catch (e) {
+        console.error("Update check failed:", e);
+        return false;
     }
 }
