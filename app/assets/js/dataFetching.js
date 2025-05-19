@@ -1,26 +1,23 @@
-
-
-
 function getRoutine() {
     return new Promise((resolve) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, async(tabs) => {
             const tab = tabs[0];
             if (tab.url !== "https://portal.aiub.edu/Student") {
                 if (tab.url.includes("portal.aiub.edu/Student")) {
                     chrome.tabs.update(tab.id, { url: "https://portal.aiub.edu/Student" });
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                } else {
+                    chrome.tabs.create({ url: "https://portal.aiub.edu/Student" });
                     return;
                 }
-                chrome.tabs.create({ url: "https://portal.aiub.edu/Student" });
-                return;
             }
-
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
+                args: [],
                 func: () => {
+                    
                     const rows = document.querySelectorAll('.scheduleTable .row');
-
                     const planMap = {};
-
                     rows.forEach(row => {
                         const entries = row.querySelectorAll('.col-md-10 .col-md-6');
                         entries.forEach(entry => {
@@ -75,7 +72,7 @@ function getRoutine() {
                             name,
                             code,
                             section,
-                            sectionStatus: sectionStatus.replace(/[()]/g, ''), 
+                            sectionStatus: sectionStatus.replace(/[()]/g, ''),
                             status,
                             result: resultText
                         });

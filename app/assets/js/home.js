@@ -7,7 +7,6 @@ async function setUpHome() {
     
     const reloadBtn = document.getElementById("reloadRoutine");
     
-
     if (reloadBtn) {
         reloadBtn.addEventListener("click", () => reloadHomePage(true));
     }
@@ -93,13 +92,13 @@ async function reloadHomePage(reload = false) {
  * @returns {boolean} - True if tomorrow's routine should be shown.
  */
 function shouldShowTomorrowRoutine(hour, minute) {
-    const time = JSON.parse(localStorage.getItem("settings")).showTomorrowsRoutineAt;
-
+    const settings= localStorage.getItem("settings");
+    if (settings === null) 
+        if (hour >= 16) return true;
+    const time = JSON.parse(settings).showTomorrowsRoutineAt;
     if (time === null && hour >= 16) {
         return true;
-    } else if (time === null) {
-        return false;
-    } else {
+    }else if (time !== null) {
         let h = parseInt(time.hour);
         if (time.ampm === "PM" && h !== 12) {
             h += 12;
@@ -110,8 +109,8 @@ function shouldShowTomorrowRoutine(hour, minute) {
         } else if (h < hour) {
             return true;
         }
-        return false;
     }
+    return false;
 }
 
 /**
