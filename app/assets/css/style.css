@@ -253,23 +253,43 @@ body {
 }
 
 /* Scrollbar styling */
-#courseList::-webkit-scrollbar {
-    width: 8px;
+.fancy-scrollbar {
+    overflow-y: scroll;
 }
 
-#courseList::-webkit-scrollbar-track {
-    background: #f1f1f1;
+/* WebKit scrollbar styling */
+.fancy-scrollbar::-webkit-scrollbar {
+    width: 12px;
+}
+
+.fancy-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
     border-radius: 10px;
 }
 
-#courseList::-webkit-scrollbar-thumb {
-    background: #007bff;
+.fancy-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #0b5ed7 0%, #2575fc 100%);
     border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
 }
 
-#courseList::-webkit-scrollbar-thumb:hover {
-    background: #0056b3;
+.fancy-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #1b1d9e 0%, #48bfe3 100%);
 }
+.fancy-scrollbar::-webkit-scrollbar-button {
+    display: none;
+}
+.fancy-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+    border-radius: 10px;
+}
+/* Firefox */
+.fancy-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #0b5ed7 #8fadcf18;
+}
+
+
 
 .course-list-title {
     font-size: 13px;

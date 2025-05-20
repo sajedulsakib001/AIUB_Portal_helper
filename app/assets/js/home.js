@@ -182,7 +182,7 @@ function showRoutine(routine) {
     const dates = getDateTime();
     if (shouldShowTomorrowRoutine(dates.hours, dates.minutes)) {
         displayRoutine(routine, dates.nextDay, true);
-        document.getElementById("routineList-next").style.display = "block";
+        document.getElementById("routineList-next").style.removeProperty("display");
     }
     displayRoutine(routine, dates.today);
 
