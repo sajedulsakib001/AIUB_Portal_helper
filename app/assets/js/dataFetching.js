@@ -107,7 +107,7 @@ function getCompletedCourseList() {
                 target: { tabId: tab.id },
                 func: () => {
                     const tables = document.querySelectorAll(".grade-report table") || [];
-                    const completed = [];
+                    const completedCourseList = [];
                     const getLatestGrade = (grade) => {
                         const matches = grade.match(/\[\w\]/g);
                         if (matches && matches.length > 0) {
@@ -127,22 +127,24 @@ function getCompletedCourseList() {
                                 let grade = cells[2].innerText.trim();
                                 if (grade.includes("[W]")) grade = getLatestGrade(grade);
                                 if (!grade) continue;
-                                else if (grade.includes("[D]")) completed.push([courseCode, courseName, "Retake"]);
-                                else completed.push([courseCode, courseName, ""]);
+                                else if (grade.includes("[D]")) completedCourseList.push([courseCode, courseName, "Retake"]);
+                                else completedCourseList.push([courseCode, courseName, ""]);
                             }
                         }
                     }
                     let program = "";
+                    let craditCompleted = 0;
                     try {
                         const firstTable = document.querySelector(".grade-report table");
-                        const firstRow = firstTable?.querySelector("tr");
-                        const lastCellText = firstRow?.cells[5]?.innerText?.trim();
+                        const lastCellText = firstTable?.querySelector("tr:nth-child(1) td:nth-child(6)")?.innerText?.trim();
                         const match = lastCellText?.includes("BSc") ? lastCellText?.match(/BSc(.*?),/)[1] : (lastCellText.split(",")[0]);
+                        craditCompleted = parseInt(firstTable?.querySelector("tr:nth-child(3) td:nth-child(3)")?.innerText?.trim());
                         if (match) program = match.trim();
+                        
                     } catch (err) {
                         console.error("Failed to extract program:", err);
                     }
-                    return [completed, program];
+                    return {completedCourseList, program, craditCompleted};
                 }
             }, (results) => {
                 if (results && results[0]?.result) {

@@ -4,32 +4,30 @@
  * @param {boolean} reload - Whether to reload data from the server.
  */
 async function loadUnlockedCourses(reload = false) {
-    let completedCourseList = null;
+    let completedInfo = null;
     let unlockedCoursesList = null;
     let program = null;
 
     if (!reload) {
-        completedCourseList = localStorage.getItem("completedCourseList");
-        program = localStorage.getItem("program");
+        completedInfo = JSON.parse(localStorage.getItem("completedInfo"));
         unlockedCoursesList = JSON.parse(localStorage.getItem("unlockedCoursesList"));
-        if (!unlockedCoursesList || !program || !completedCourseList) {
+        if (!unlockedCoursesList || !completedInfo) {
             showCourseListMessage("No data found! Please reload the page.");
             return;
         }
-        displayUnlockedCourseList(unlockedCoursesList, program);
+        displayUnlockedCourseList(unlockedCoursesList, completedInfo.program);
         return;
     }
 
-    completedCourseList = await getCompletedCourseList();
-    if (!completedCourseList) {
+    completedInfo = await getCompletedCourseList();
+    if (!completedInfo) {
         showCourseListMessage("Something went wrong! Please try again later.");
         return;
     }
-    localStorage.setItem("completedCourseList", JSON.stringify(completedCourseList[0]));
-    program = completedCourseList[1];
-    localStorage.setItem("program", program);
+    localStorage.setItem("completedInfo", JSON.stringify(completedInfo));
+    program = completedInfo.program;
 
-    unlockedCoursesList = await getUnlockedCourseList(program, completedCourseList[0], 80);
+    unlockedCoursesList = await getUnlockedCourseList(program, completedInfo.completedCourseList, completedInfo.craditCompleted);
     if (!unlockedCoursesList) {
         showCourseListMessage("Something went wrong! Please try again later.");
         return;
@@ -58,7 +56,6 @@ function displayUnlockedCourseList(results, programName) {
     const list = document.getElementById("courseList");
     if (!list) return;
     list.innerHTML = "";
-
     if (programName) {
         const header = document.getElementById("program");
         if (header) header.textContent = "Program: BSc " + programName;
@@ -113,32 +110,36 @@ async function getUnlockedCourseList(program, completedCourseList, craditComplet
             unlockedCourseList[0].push([code, name, status]);
         }
     });
-
     try {
+        const formateCode = (code) => code.split("-")[0];
         const response = await fetch(`app/assets/json/${program}.json`);
         const data = await response.json();
         let courseData = data;
-        let position = 0;
-
-        for (const [code, value] of Object.entries(courseData)) {
-            if (code === "elective") {
-                position = 1;
-                courseData = courseData["elective"];
-                continue;
-            }
+        for (const [c, value] of Object.entries(courseData["main"])) {
+            const code = formateCode(c);
             const prereqs = value[0];
             const courseName = value[1];
-
-            if (prereqs[0] !== "Nil" || prereqs.length > 0) {
                 // Check if all prerequisites are completed and course is not already completed
                 const allPrereqsCompleted = prereqs.every(p => completedCodes.includes(p));
                 const alreadyCompleted = completedCodes.includes(code);
-                if (allPrereqsCompleted && !alreadyCompleted) {
-                    unlockedCourseList[position].push([code, courseName, ""]);
+                const isCraditGreater = prereqs[0].includes("Credits")?parseInt(prereqs[0])<=craditCompleted:false;
+                if ((allPrereqsCompleted || isCraditGreater||prereqs[0]==="Nil")&& !alreadyCompleted) {
+                    unlockedCourseList[0].push([code, courseName, ""]);
                 }
-            } else if (position === 2 && craditCompleted >= 80) {
-                unlockedCourseList[position].push([code, courseName, ""]);
-            }
+            
+        }
+        for (const [c, value] of Object.entries(courseData["elective"])) {
+            const code = formateCode(c);
+            const prereqs = value[0];
+            const courseName = value[1];
+                // Check if all prerequisites are completed and course is not already completed
+                const allPrereqsCompleted = prereqs.every(p => completedCodes.includes(p));
+                const alreadyCompleted = completedCodes.includes(code);
+                const isCraditGreater = prereqs[0].includes("Credits")?parseInt(prereqs[0])<=craditCompleted:false;
+                if ((allPrereqsCompleted || isCraditGreater||prereqs[0]==="Nil")&& !alreadyCompleted) {
+                    unlockedCourseList[1].push([code, courseName, ""]);
+                }
+            
         }
     } catch (error) {
         console.error('Error loading course data:', error);

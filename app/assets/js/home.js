@@ -96,7 +96,7 @@ function shouldShowTomorrowRoutine(hour, minute) {
     if (settings === null) 
         if (hour >= 16) return true;
     const time = JSON.parse(settings).showTomorrowsRoutineAt;
-    if (time === null && hour >= 16) {
+    if ((time === null||time.hour==="Hour") && hour >= 16) {
         return true;
     }else if (time !== null) {
         let h = parseInt(time.hour);
