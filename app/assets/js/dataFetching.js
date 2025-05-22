@@ -1,6 +1,6 @@
 function getRoutine() {
     return new Promise((resolve) => {
-        chrome.tabs.query({ active: true, currentWindow: true }, async(tabs) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
             const tab = tabs[0];
             if (tab.url !== "https://portal.aiub.edu/Student") {
                 if (tab.url.includes("portal.aiub.edu/Student")) {
@@ -15,7 +15,7 @@ function getRoutine() {
                 target: { tabId: tab.id },
                 args: [],
                 func: () => {
-                    
+
                     const rows = document.querySelectorAll('.scheduleTable .row');
                     const planMap = {};
                     rows.forEach(row => {
@@ -106,15 +106,15 @@ function getCompletedCourseList() {
                 target: { tabId: tab.id },
                 func: () => {
                     const tables = document.querySelectorAll(".grade-report table") || [];
-                    
+
                     const courseList = [];
                     const semesterMap = {
-                        "Spring":0,
-                        "Summer":1,
-                        "Fall" :2,
-                        0:"Spring",
-                        1:"Summer",
-                        2:"Fall"
+                        "Spring": 0,
+                        "Summer": 1,
+                        "Fall": 2,
+                        0: "Spring",
+                        1: "Summer",
+                        2: "Fall"
                     };
                     let currentYear = null;
                     let currentSemester;
@@ -134,16 +134,24 @@ function getCompletedCourseList() {
                             if (cells.length > 2) {
                                 const courseCode = cells[0].innerText.trim();
                                 const courseName = cells[1].innerText.trim();
-                                let grade = cells[2].innerText.trim();
-                                if(grade.includes("[ - ]")){
+                                let grade = ((str) => {
+                                    const match = str.match(/\([^()]+\)\s+\[[^\[\]]+\](?=\s*$)/);
+                                    return match ? match[0] : null;
+                                })(cells[2].innerText.trim());
+                                if (grade === null) continue;
+                                if (grade.includes("[ - ]")) {
                                     const year = parseInt(grade.split("-")[1]);
                                     const semester = grade.split(",")[1].split(")")[0].trim();
-                                    if(currentYear===null){
+
+                                    if (currentYear === null) {
                                         currentYear = year;
                                         currentSemester = semesterMap[semester];
-                                    }else if(currentYear>year)currentYear = year;
-                                    else if(currentYear===year&&currentSemester+1===semesterMap[semester]) continue;
-                                    courseList.push([courseCode, courseName, year+"-"+semester])
+                                    } else if (currentYear > year) currentYear = year;
+                                    else if (currentYear === year && currentSemester > semesterMap[semester]) currentSemester = semesterMap[semester];
+                                    if (currentYear === year && currentSemester + 1 === semesterMap[semester]) continue;
+                                    const res = [courseCode, courseName, year + "-" + semester];
+                                    courseList.push(res);
+                                    console.log(res);
                                     continue;
                                 }
                                 if (grade.includes("[W]")) grade = getLatestGrade(grade);
@@ -152,21 +160,18 @@ function getCompletedCourseList() {
                             }
                         }
                     }
-                    console.log("courseList: ", courseList );
-                    const nextSemster = (currentSemester+1>2)?semesterMap[0]:semesterMap[currentSemester+1];
-                    console.log(nextSemster)
+                    const nextSemster = (currentSemester + 1 > 2) ? semesterMap[0] : semesterMap[currentSemester + 1];
                     const completedCourseList = [];
-                    
-                    for(const course of courseList ){
-                        if(course[2]===""||course[2]==="Retake"){
+
+                    for (const course of courseList) {
+                        if (course[2] === "" || course[2] === "Retake") {
                             completedCourseList.push(course);
                             continue;
                         }
-                        else if(course[2].includes(nextSemster))continue;
+                        else if (course[2].includes(nextSemster)) continue;
                         course[2] = "";
                         completedCourseList.push(course);
                     }
-                    console.log("completedCourseList: ", completedCourseList );
                     let program = "";
                     let craditCompleted = 0;
                     try {
@@ -175,11 +180,11 @@ function getCompletedCourseList() {
                         const match = lastCellText?.includes("BSc") ? lastCellText?.match(/BSc(.*?),/)[1] : (lastCellText.split(",")[0]);
                         craditCompleted = parseInt(firstTable?.querySelector("tr:nth-child(3) td:nth-child(3)")?.innerText?.trim());
                         if (match) program = match.trim();
-                        
+
                     } catch (err) {
                         console.error("Failed to extract program:", err);
                     }
-                    return {completedCourseList, program, craditCompleted};
+                    return { completedCourseList, program, craditCompleted };
                 }
             }, (results) => {
                 if (results && results[0]?.result) {
