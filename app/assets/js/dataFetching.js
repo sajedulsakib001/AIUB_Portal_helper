@@ -102,12 +102,22 @@ function getCompletedCourseList() {
                 chrome.tabs.create({ url: "https://portal.aiub.edu/Student/GradeReport/ByCurriculum" });
                 return;
             }
-
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
                 func: () => {
                     const tables = document.querySelectorAll(".grade-report table") || [];
-                    const completedCourseList = [];
+                    
+                    const courseList = [];
+                    const semesterMap = {
+                        "Spring":0,
+                        "Summer":1,
+                        "Fall" :2,
+                        0:"Spring",
+                        1:"Summer",
+                        2:"Fall"
+                    };
+                    let currentYear = null;
+                    let currentSemester;
                     const getLatestGrade = (grade) => {
                         const matches = grade.match(/\[\w\]/g);
                         if (matches && matches.length > 0) {
@@ -125,13 +135,38 @@ function getCompletedCourseList() {
                                 const courseCode = cells[0].innerText.trim();
                                 const courseName = cells[1].innerText.trim();
                                 let grade = cells[2].innerText.trim();
+                                if(grade.includes("[ - ]")){
+                                    const year = parseInt(grade.split("-")[1]);
+                                    const semester = grade.split(",")[1].split(")")[0].trim();
+                                    if(currentYear===null){
+                                        currentYear = year;
+                                        currentSemester = semesterMap[semester];
+                                    }else if(currentYear>year)currentYear = year;
+                                    else if(currentYear===year&&currentSemester+1===semesterMap[semester]) continue;
+                                    courseList.push([courseCode, courseName, year+"-"+semester])
+                                    continue;
+                                }
                                 if (grade.includes("[W]")) grade = getLatestGrade(grade);
-                                if (!grade) continue;
-                                else if (grade.includes("[D]")) completedCourseList.push([courseCode, courseName, "Retake"]);
-                                else completedCourseList.push([courseCode, courseName, ""]);
+                                if (!grade) continue; else if (grade.includes("[D]")) courseList.push([courseCode, courseName, "Retake"]);
+                                else courseList.push([courseCode, courseName, ""]);
                             }
                         }
                     }
+                    console.log("courseList: ", courseList );
+                    const nextSemster = (currentSemester+1>2)?semesterMap[0]:semesterMap[currentSemester+1];
+                    console.log(nextSemster)
+                    const completedCourseList = [];
+                    
+                    for(const course of courseList ){
+                        if(course[2]===""||course[2]==="Retake"){
+                            completedCourseList.push(course);
+                            continue;
+                        }
+                        else if(course[2].includes(nextSemster))continue;
+                        course[2] = "";
+                        completedCourseList.push(course);
+                    }
+                    console.log("completedCourseList: ", completedCourseList );
                     let program = "";
                     let craditCompleted = 0;
                     try {
