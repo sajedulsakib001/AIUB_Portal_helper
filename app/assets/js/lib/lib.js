@@ -49,3 +49,46 @@ function formatDate(date) {
     };
     return new Intl.DateTimeFormat("en-US", options).format(date);
 }
+
+/**
+ * Checks if a newer version of the Chrome extension is available by comparing
+ * the current version from the manifest with the latest version available online.
+ *
+ * Fetches the latest manifest file from the specified GitHub repository,
+ * extracts the version, and compares it to the currently installed version.
+ *
+ * @async
+ * @function
+ * @returns {Promise<boolean>} Resolves to true if an update is available, false otherwise.
+ * @throws Will log an error and return false if the fetch or comparison fails.
+ */
+async function isUpdateAvailable() {
+    const currentVersion = chrome.runtime.getManifest().version;
+    const result = {
+        isAvailable: false,
+        updateType: "No Update",
+        currentVersion,
+        latestVersion: currentVersion
+    };
+    try {
+        const res = await fetch('https://raw.githubusercontent.com/sajedulsakib001/AIUB_Portal_helper/main/manifest.json');
+        const latestVersion = (await res.json()).version;
+        result.latestVersion = latestVersion;
+        const toNumbers = v => v.split('.').map(n => parseInt(n) || 0);
+        const [cMajor, cMinor, cPatch] = toNumbers(currentVersion);
+        const [lMajor, lMinor, lPatch] = toNumbers(latestVersion);
+        if (lMajor > cMajor) {
+            result.updateType = "Major";
+            result.isAvailable = true;
+        } else if (lMinor > cMinor) {
+            result.updateType = "Minor";
+            result.isAvailable = true;
+        } else if (lPatch > cPatch) {
+            result.updateType = "Patch";
+            result.isAvailable = true;
+        }
+    } catch (e) {
+        console.error("Error checking for update:", e);
+    }
+    return result;
+}

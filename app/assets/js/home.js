@@ -24,8 +24,10 @@ async function setUpHome() {
     });
 
     const _isUpdateAvailable = await isUpdateAvailable();
-    if(_isUpdateAvailable){
+    if(_isUpdateAvailable.isAvailable){
         showUpdatePopUp.style.display = "block";
+        document.getElementById("updateType").innerText = _isUpdateAvailable.updateType;
+        document.getElementById("version").innerText = _isUpdateAvailable.latestVersion;
     }
     
 }
@@ -225,29 +227,3 @@ function displayRoutine(routine, date, next = false) {
     }
 }
 
-/**
- * Checks if a newer version of the Chrome extension is available by comparing
- * the current version from the manifest with the latest version available online.
- *
- * Fetches the latest manifest file from the specified GitHub repository,
- * extracts the version, and compares it to the currently installed version.
- *
- * @async
- * @function
- * @returns {Promise<boolean>} Resolves to true if an update is available, false otherwise.
- * @throws Will log an error and return false if the fetch or comparison fails.
- */
-async function isUpdateAvailable() {
-    try {
-        const current = chrome.runtime.getManifest().version;
-        const res = await fetch('https://raw.githubusercontent.com/sajedulsakib001/AIUB_Portal_helper/main/manifest.json');
-        const latest = (await res.json()).version;
-        console.log("Current Version: ", current);
-        console.log("Latest Version: ", latest);
-
-        return latest.split('.').some((n, i) => (parseInt(n) || 0) > (parseInt(current.split('.')[i]) || 0));
-    } catch (e) {
-        console.error("Update check failed:", e);
-        return false;
-    }
-}
