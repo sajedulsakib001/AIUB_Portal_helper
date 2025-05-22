@@ -1,3 +1,9 @@
+/**
+ * Fetches the student's current class routine and enrolled courses from the AIUB portal.
+ * Ensures the user is on the correct Student page, injects a script to extract routine and course data from the DOM,
+ * and returns a Promise that resolves with the routine and current courses.
+ * @returns {Promise<Array|null>} - Resolves with [routine, currentCourses] or null on failure.
+ */
 function getRoutine() {
     return new Promise((resolve) => {
         chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
@@ -90,6 +96,12 @@ function getRoutine() {
     });
 }
 
+/**
+ * Fetches the list of completed courses, program, and credits from the AIUB portal.
+ * Ensures the user is on the correct Grade Report page, injects a script to extract completed course data from the DOM,
+ * and returns a Promise that resolves with the completed courses, program, and credits.
+ * @returns {Promise<Object>} - Resolves with { completedCourseList, program, craditCompleted } or rejects on failure.
+ */
 function getCompletedCourseList() {
     return new Promise((resolve, reject) => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

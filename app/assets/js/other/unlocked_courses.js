@@ -80,11 +80,24 @@ function displayUnlockedCourseList(results, programName) {
             titleSpan.className = "course-title";
             titleSpan.textContent = `${code}: ${name}`;
             if (status === "Retake") {
+                const message = "You’ve already completed this course, but you can retake it anytime if you wish.";
+
                 const badge = document.createElement("span");
-                badge.className = "badge badge-warning";
-                badge.textContent = "Retake";
+                const text = document.createElement("div");
+                const tooltip = document.createElement("span");
+
+                badge.className = "badge badge-warning show-tooltip";
+                tooltip.className = "tooltip";
+
+                text.innerText = "Retake";
+                tooltip.innerText = message;
+
+                tooltip.style.width = "300px";
+
+                badge.append(text, tooltip);
                 titleSpan.append(" ", badge);
             }
+
 
             cardBody.appendChild(titleSpan);
             card.appendChild(cardBody);
@@ -119,27 +132,27 @@ async function getUnlockedCourseList(program, completedCourseList, craditComplet
             const code = formateCode(c);
             const prereqs = value[0];
             const courseName = value[1];
-                // Check if all prerequisites are completed and course is not already completed
-                const allPrereqsCompleted = prereqs.every(p => completedCodes.includes(p));
-                const alreadyCompleted = completedCodes.includes(code);
-                const isCraditGreater = prereqs[0].includes("Credits")?parseInt(prereqs[0])<=craditCompleted:false;
-                if ((allPrereqsCompleted || isCraditGreater||prereqs[0]==="Nil")&& !alreadyCompleted) {
-                    unlockedCourseList[0].push([code, courseName, ""]);
-                }
-            
+            // Check if all prerequisites are completed and course is not already completed
+            const allPrereqsCompleted = prereqs.every(p => completedCodes.includes(p));
+            const alreadyCompleted = completedCodes.includes(code);
+            const isCraditGreater = prereqs[0].includes("Credits") ? parseInt(prereqs[0]) <= craditCompleted : false;
+            if ((allPrereqsCompleted || isCraditGreater || prereqs[0] === "Nil") && !alreadyCompleted) {
+                unlockedCourseList[0].push([code, courseName, ""]);
+            }
+
         }
         for (const [c, value] of Object.entries(courseData["elective"])) {
             const code = formateCode(c);
             const prereqs = value[0];
             const courseName = value[1];
-                // Check if all prerequisites are completed and course is not already completed
-                const allPrereqsCompleted = prereqs.every(p => completedCodes.includes(p));
-                const alreadyCompleted = completedCodes.includes(code);
-                const isCraditGreater = prereqs[0].includes("Credits")?parseInt(prereqs[0])<=craditCompleted:false;
-                if ((allPrereqsCompleted || isCraditGreater||prereqs[0]==="Nil")&& !alreadyCompleted) {
-                    unlockedCourseList[1].push([code, courseName, ""]);
-                }
-            
+            // Check if all prerequisites are completed and course is not already completed
+            const allPrereqsCompleted = prereqs.every(p => completedCodes.includes(p));
+            const alreadyCompleted = completedCodes.includes(code);
+            const isCraditGreater = prereqs[0].includes("Credits") ? parseInt(prereqs[0]) <= craditCompleted : false;
+            if ((allPrereqsCompleted || isCraditGreater || prereqs[0] === "Nil") && !alreadyCompleted) {
+                unlockedCourseList[1].push([code, courseName, ""]);
+            }
+
         }
     } catch (error) {
         console.error('Error loading course data:', error);
