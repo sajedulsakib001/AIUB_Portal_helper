@@ -29,9 +29,9 @@ Aiub Portal Helper is a Chrome extension designed to assist AIUB students by aut
 1. Download the updated version from GitHub and extract it.
 2. Copy all the files from the root folder of the new version.
 3. Navigate to your previous extension folder and paste the new files to overwrite with the old ones.
-4. Open the extension again and click on 'Reload Extension' inside the Extension Update pop-up.
-   **OR**
-   • Open Chrome and go to `chrome://extensions/`.
+4. Open the extension again and click on 'Reload Extension' inside the Extension Update pop-up.<br>
+   **OR**<br>
+   • Open Chrome and go to `chrome://extensions/`.<br>
    • Click the **Reload** button to reload the extension.
 
 ---
