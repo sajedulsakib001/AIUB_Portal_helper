@@ -19,6 +19,9 @@ async function setUpHome() {
             popup.classList.remove("show");
         }, 10000);
     });
+    document.getElementById("reload_extension").addEventListener("click", (e) => {
+        chrome.runtime.reload();
+    });
     document.getElementById("closePopup").addEventListener("click", () => {
         document.getElementById('updatePopUpBox').classList.remove('show');
     });
