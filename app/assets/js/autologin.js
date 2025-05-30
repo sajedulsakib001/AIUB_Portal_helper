@@ -22,6 +22,9 @@
    */
   const init = async () => {
     if (!(document.querySelector('.login_header'))) {
+      if((isErrorPage=document.querySelector('body > span > h2 > i'))&& 
+        isErrorPage.innerText.includes("The provided anti-forgery token was meant for user")) 
+          location.replace(location.href);
       console.log("Not on the login page.");
       return;
     }
