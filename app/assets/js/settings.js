@@ -36,6 +36,9 @@ function saveSettingsInStorage() {
     const autoLogin = document.getElementById("autoLogin").checked;
     const apiKey = document.getElementById("apiKey").value;
 
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
 
     if (autoLogin && apiKey === "") {
         document.getElementById("wrongApi").style = "display:block;";
@@ -49,9 +52,11 @@ function saveSettingsInStorage() {
         apiKey,
         showTomorrowsRoutineAt
     };
+    if(username !== "") data.username = username;
+    if(password !== "") data.password = password;
 
     localStorage.setItem("settings", JSON.stringify(data));
-    chrome.storage.local.set({ settings: { autoLogin, apiKey } }, () => {
+    chrome.storage.local.set({ settings: data}, () => {
 
     });
     return true;
@@ -63,6 +68,8 @@ function showSavedSettings() {
     if (settings !== null) {
         document.getElementById("autoLogin").checked = settings.autoLogin;
         document.getElementById("apiKey").value = settings.apiKey;
+        if(settings.username)document.getElementById("username").value = settings.username;
+        if(settings.password)document.getElementById("password").value = settings.password;
         showSelectedTimeforT(settings.showTomorrowsRoutineAt);
         if (settings.autoLogin) {
             document.getElementById("settingsFields").classList.add("show");

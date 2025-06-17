@@ -13,9 +13,9 @@
             </div>
 
             <!-- Collapsible Fields -->
-            <div class="collapse" id="settingsFields">
+            <div class="collapse mb-4" id="settingsFields">
                 <!-- API Key Input -->
-                <div class="mb-4">
+                <div class="">
                     <label for="apiKey" class="form-label">
                         Gemini API Key<span class="text-danger">* </span>
                         <span class="info-icon text-info">
@@ -41,7 +41,25 @@
                     <p role="alert" class="wrongData" id="wrongApi" style="display: none;">
                         You must provide a valid Api-Key.
                     </p>
+                    
                 </div>
+                <dev class="row mt-2">
+                    <div class="col">
+                        <label for="apiKey" class="form-label">
+                            Username
+                        </label>
+                        <input type="text" class="form-control" id="username" placeholder="Enter your Username" />
+                    </div>
+                    <div class="col">
+                        <label for="apiKey" class="form-label">
+                            Password
+                        </label>
+                        <input type="password" class="form-control" id="password" placeholder="Enter your Password" />
+                    </div>
+                </dev>
+                <p role="alert" class="wrongData" id="wrongApi" style="color: green;">
+                    Note: You can leave Username and Password blank.
+                </p>
             </div>
 
             <!-- Show Tomorrow's Routine At -->

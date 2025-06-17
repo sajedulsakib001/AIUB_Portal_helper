@@ -16,6 +16,17 @@
     });
   };
 
+  const autoUserandPassFill = (settings) =>{
+    const userInput = document.querySelector("input[name='UserName']");
+    const passInput = document.querySelector("input[name='Password']");
+    if (userInput && settings.username) {
+      userInput.value = settings.username;
+    }
+    if (passInput && settings.password) {
+      passInput.value = settings.password;
+    } 
+  }
+
   /**
    * Initializes the auto-login process.
    * Checks if on the login page, loads settings, and starts captcha solving if enabled.
@@ -39,10 +50,14 @@
       console.error("API key not found in chrome.storage.local.");
       return;
     }
+    
+    autoUserandPassFill(settings);
+    
 
     attachInputEvents();
     await solveCaptcha(settings.apiKey);
   };
+  
 
   /**
    * Attaches input and click event listeners to login form fields to trigger auto-submit.
