@@ -12,8 +12,9 @@
 </head>
 
 <body>
-    <button class="showNotification" id="showPopup">😐</button>
+    
     <div class="wrapper">
+        <button class="showNotification" id="showPopup">😐</button>
         <div class="page active" id="show-page-content">
 
         </div>
@@ -34,9 +35,27 @@
                 👉 <a href="https://github.com/sajedulsakib001/AIUB_Portal_helper" target="_blank">Click here to visit the GitHub page</a>
             </p>
         </div>
+       
 
 
 
+    </div>
+     <!-- Add Popup code here-->
+    <div id="init-data-load" class="custom-popup">
+        <h4 class="mb-2" style="font-weight: bold;">Welcome 👋</h4>
+        <p>
+            It looks like you've just installed the extension. Please click the button and wait while the data is being extracted from the portal.
+            <br>
+            <button class="btn btn-primary mt-3" id="initDataLoadBtn">Load Data</button>
+        </p>
+    </div>
+     <!-- Add Popup code here-->
+    <div id="init-data-loading" class="custom-popup">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <br>
+        <h5>Loading...</h5>
     </div>
 
     <script src="app/assets/js/index.js"></script>
@@ -47,6 +66,7 @@
     <script src="app/assets/js/other/exam_schedule.js"></script>
     <script src="app/assets/js/other/unlocked_courses.js"></script>
     <script src="app/assets/js/lib/lib.js"></script>
+    <script src="app/assets/js/fetch/getalldata.js"></script>
 </body>
 
 </html>

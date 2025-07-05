@@ -1,3 +1,16 @@
+
+/**
+ * This script handles the loading and displaying of unlocked courses
+ * It retrieves the list of unlocked courses from the server or localStorage
+ * and displays them in the UI.
+ * It also manages the prerequisites and completed courses
+ * to determine which courses are available for the user to take.
+ * 
+ */
+
+
+
+
 /**
  * Loads and displays the list of unlocked courses.
  * If reload is false, loads from localStorage; otherwise, fetches fresh data.

@@ -10,7 +10,7 @@ async function setUpHome() {
     if (reloadBtn) {
         reloadBtn.addEventListener("click", () => reloadHomePage(true));
     }
-    reloadHomePage();
+    reloadHomePage(false);
     const showUpdatePopUp = document.getElementById("showUpdatePopUp");
     showUpdatePopUp.addEventListener("click", () => {
         const popup = document.getElementById("updatePopUpBox");
@@ -79,10 +79,12 @@ async function reloadHomePage(reload = false) {
 
     data = await getRoutine();
     if (data !== null) {
-        show(data[0]);
+        show(data.routine);
         setCurrentDates();
-        localStorage.setItem("routine", JSON.stringify(data[0]));
-        localStorage.setItem("currentCourses", JSON.stringify(data[1]));
+        console.log("Routine: ", data.routine);
+        localStorage.setItem("routine", JSON.stringify(data.routine));
+        localStorage.setItem("currentCourses", JSON.stringify(data.currentCourses));
+        
 
     } else {
         showNoRoutineMessage();

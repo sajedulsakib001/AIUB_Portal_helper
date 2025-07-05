@@ -1,3 +1,15 @@
+/* * AIUB Portal Helper - Data Fetching Module
+ * This module contains functions to fetch data from the AIUB portal, including the student's class routine,
+ * enrolled courses, completed courses, and the list of unlocked courses.
+ * It uses Chrome's scripting API to inject scripts into the portal page and extract the required information
+ * from the DOM.
+ */
+
+
+
+
+
+
 /**
  * Fetches the student's current class routine and enrolled courses from the AIUB portal.
  * Ensures the user is on the correct Student page, injects a script to extract routine and course data from the DOM,
@@ -55,7 +67,7 @@ function getRoutine() {
                     });
 
                     const orderedDays = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-                    const orderedPlan = orderedDays
+                    const routine = orderedDays
                         .filter(day => planMap[day])
                         .map(day => ({
                             day,
@@ -83,7 +95,7 @@ function getRoutine() {
                             result: resultText
                         });
                     });
-                    return [orderedPlan, currentCourses];
+                    return { routine, currentCourses };
                 }
             }, (results) => {
                 if (results && results[0]?.result) {
@@ -106,18 +118,31 @@ function getCompletedCourseList() {
     return new Promise((resolve, reject) => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];
-            if (!tab.url.includes("portal.aiub.edu/Student/GradeReport/ByCurriculum")) {
-                if (tab.url.includes("portal.aiub.edu/Student")) {
-                    chrome.tabs.update(tab.id, { url: "https://portal.aiub.edu/Student/GradeReport/ByCurriculum" });
-                    return;
-                }
-                chrome.tabs.create({ url: "https://portal.aiub.edu/Student/GradeReport/ByCurriculum" });
+            if (!tab.url.includes("portal.aiub.edu/Student")) {
+                chrome.tabs.create({ url: "https://portal.aiub.edu/Student" });
                 return;
             }
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                func: () => {
-                    const tables = document.querySelectorAll(".grade-report table") || [];
+                func: async () => {
+                    let html = "";
+                    try {
+                        const response = await fetch("https://portal.aiub.edu/Student/GradeReport/ByCurriculum");
+                        if (!response.ok) {
+                            throw new Error(`Response status: ${response.status}`);
+                        }
+
+                        html = await response.text();
+                    } catch (error) {
+                        console.error(error.message);
+                    }
+                    if (html === "") return [];
+
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+
+
+                    const tables = doc.querySelectorAll(".grade-report table") || [];
 
                     const courseList = [];
                     const semesterMap = {
@@ -187,7 +212,7 @@ function getCompletedCourseList() {
                     let program = "";
                     let craditCompleted = 0;
                     try {
-                        const firstTable = document.querySelector(".grade-report table");
+                        const firstTable = doc.querySelector(".grade-report table");
                         const lastCellText = firstTable?.querySelector("tr:nth-child(1) td:nth-child(6)")?.innerText?.trim();
                         const match = lastCellText?.includes("BSc") ? lastCellText?.match(/BSc(.*?),/)[1] : (lastCellText.split(",")[0]);
                         craditCompleted = parseInt(firstTable?.querySelector("tr:nth-child(3) td:nth-child(3)")?.innerText?.trim());

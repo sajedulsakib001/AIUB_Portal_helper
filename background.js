@@ -3,5 +3,5 @@ chrome.action.onClicked.addListener(async (tab) => {
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ["app/assets/js/autologin.js"],
-    }).catch(console.error);;
+    }).catch(console.error);
 });

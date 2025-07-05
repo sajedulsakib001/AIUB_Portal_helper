@@ -11,11 +11,14 @@ body {
 }
 
 .wrapper {
-    display: flex;
+    display: none;
     flex-direction: column;
     height: 100%;
     padding: 10px;
     box-sizing: border-box;
+}
+.wrapper.show{
+    display: flex;
 }
 
 .header {
@@ -340,6 +343,7 @@ body {
 .custom-popup.show {
     display: block;
 }
+
 
 .custom-popup .close-btn {
     float: right;
